@@ -456,13 +456,31 @@ module Squeel
             end
           end
 
-          it 'behaves as normal with standard parameters' do
-            people = Person.select(:id)
-            people.should have(10).people
-            if ::ActiveRecord::VERSION::MAJOR == 3 && ::ActiveRecord::VERSION::MINOR == 0 && RUBY_VERSION >= '2.0.0'
-              people.first.name.should be_nil
-            else
-              expect { people.first.name }.to raise_error ActiveModel::MissingAttributeError
+          describe 'with standard parameters' do
+            it 'behaves as normal' do
+              people = Person.select(:id)
+              people.should have(10).people
+              if ::ActiveRecord::VERSION::MAJOR == 3 && ::ActiveRecord::VERSION::MINOR == 0 && RUBY_VERSION >= '2.0.0'
+                people.first.name.should be_nil
+              else
+                expect { people.first.name }.to raise_error ActiveModel::MissingAttributeError
+              end
+            end
+
+            if ::ActiveRecord::VERSION::MAJOR >= 4
+              it 'behaves as normal using new active record syntax' do
+                expected = Person.first.name
+                people = Person.select(:id, :name, :salary)
+                people.should have(10).people
+                people.first.name.should eq expected
+              end
+
+              it 'behaves as normal using previous active record syntax' do
+                expected = Person.first.name
+                people = Person.select([:id, :name, :salary])
+                people.should have(10).people
+                people.first.name.should eq expected
+              end
             end
           end
 
